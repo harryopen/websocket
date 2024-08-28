@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>chat Application </title>
+</head>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+  }
+
+  h1 {
+    text-align: center;
+  }
+
+  #messages {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto; /* Scrollbar for long lists */
+  }
+
+  .message {
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 5px;
+    font-size: 16px;
+  }
+
+  .message.user {
+    background-color: #e0f7fa; /* Light blue background for user messages */
+    color: blue;
+    text-align: right;
+    border: 1px solid #b2ebf2;
+  }
+
+  .message.other {
+    background-color: #ffe0b2; /* Light orange background for other messages */
+    color: green;
+    text-align: left;
+    border: 1px solid #ffcc80;
+  }
+
+  /* Additional styling for odd and even messages */
+  #messages p:nth-child(odd) {
+    border: 1px solid #ccc;
+  }
+</style>
+<body>
+  <h1> chat App</h1>
+  <input type="text" id="message" placeholder="Type your message">
+  <button type="submit" id="btn">Send</button>
+  <div id="messages"></div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+  const socket = io();
+  var message = document.getElementById('message');
+  const sendbtn = document.getElementById('btn');
+  const allMessages = document.getElementById('messages');
+
+  let currentUserId = null;
+
+  socket.on('connect', () => {
+    currentUserId = socket.id;
+    console.log(currentUserId);
+  });
+
+  socket.on('message',({message,senderId})=>{
+    const p =document.createElement('p');
+    p.innerText = message;
+    p.classList.add('message');
+
+
+    if (senderId === currentUserId) {
+        p.classList.add('user'); // Apply styles for user messages
+      } else {
+        p.classList.add('other'); // Apply styles for other messages
+      }
+
+      allMessages.appendChild(p);
+      allMessages.scrollTop = allMessages.scrollHeight;
+  })
+  sendbtn.addEventListener("click",(e)=>{
+    var messageText = message.value;
+    message.value = '';
+    socket.emit('user-message',messageText);
+  })
+  </script>
+</body>
+</html>
